@@ -1,0 +1,88 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8"/>
+    <style>
+#input,
+#result{
+  width:40%;
+  height:500px;
+  display: inline-block;
+  vertical-align: top;
+}
+.measure{
+  overflow-x: hidden;
+  hyphens: auto;
+  -webkit-hyphens: auto;
+  -moz-hyphens: auto;
+  -ms-hyphens: auto;
+  width: 3px;
+  padding:0;
+  visibility: hidden;
+}
+#result span:nth-child(2n){
+  color:red;
+}
+#result{
+  white-space:pre-wrap;
+}
+    </style>
+  </head>
+  <body lang=pl>
+    <textarea id=input>A kapusta rzecze smutnie:
+"Moi drodzy, po co kłótnie,
+Po co wasze swary głupie,
+Wnet i tak zginiemy w zupie!"</textarea>
+    <div id=result></div>
+  </body>
+<script>
+function hyphenate(word){
+  const div=document.createElement('div');
+  div.innerText = word.toLocaleLowerCase();//somehow it matters
+  div.className = 'measure';
+  div.lang = 'pl';
+  document.body.appendChild(div);
+  const textNode = div.childNodes[0];
+  div.offsetHeight;
+  const range = document.createRange();
+  const syllabes = [];
+  let syllabe = '';
+  let lastTop = 0;
+  for(let i=0;i<word.length;++i){
+    range.setStart(textNode, i);
+    range.setEnd(textNode, i+1);
+    const rect=range.getClientRects()[0];
+    if(i==0||rect.top==lastTop){
+      syllabe += word[i];
+    }else{
+      syllabes.push(syllabe);
+      syllabe = word[i];
+    }
+    lastTop=rect.top;
+  }
+  syllabes.push(syllabe);
+  document.body.removeChild(div);
+  return syllabes;
+}
+const input = document.getElementById('input');
+function update(){
+  const result = document.getElementById('result')
+  result.innerHTML = '';
+  input.value.split(/(\s)/g).forEach((word,i)=>{
+    if(i%2){
+      result.appendChild(document.createTextNode(word));
+    }else{
+      const syllabes= hyphenate(word);
+      syllabes.forEach((syllabe,i)=>{
+        const span=document.createElement('span');
+        span.innerText = syllabe;
+        result.appendChild(span);
+      });
+    }
+  })
+}
+update();
+input.addEventListener('change',update);
+input.addEventListener('keyup',update);
+</script>
+</html>
